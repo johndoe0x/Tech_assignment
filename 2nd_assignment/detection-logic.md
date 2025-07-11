@@ -1,25 +1,25 @@
-# Detection Rules Configuration
+# Detection logics Configuration
 
 ## Overview
 
-This document defines detection rules for USDC contract monitoring following Blockaid's platform setup process. Based on Circle's concerns from the challenge requirements:
+This document defines detection logic for USDC contract monitoring following Blockaid's platform setup process. Based on Circle's concerns from the challenge requirements:
 
 - **Privileged access** (who can do what)
 - **Proxy implementation upgrade risks**
 - **Potential for abuse of admin or role-based functions**
 
-## Step 1: Choosing Detection Logic Types
+## Step 1: Configure Detection Logic Types
 
 ### 1.1 Invariant Violation Detection Logic
 
 **Scope**: Inventory  
 **Requirements**:
 
-- Supported Labels: token, proxy, upgradeable
+- Supported Labels: token, proxy, upgradeable, role
 - Supported Chains: Ethereum Mainnet
 - Target Asset: USDC contract in inventory
 
-**Usage Guidelines**: Monitor critical contract invariants that should never be violated under normal operations. Essential for detecting state manipulation, privilege escalation, and bypass attempts.
+**Usage Guidelines**: Monitor critical contract invariants that should never be violated under normal operations. Essential for detecting proper Privileged access, privilege escalation, proxy contract upgrade, abusing role based functions. 
 
 **Example**: Detecting when multiple high-privilege roles are assigned to the same address, violating role separation principles.
 
@@ -80,280 +80,375 @@ This document defines detection rules for USDC contract monitoring following Blo
 **Example**: Rapid succession of role changes from unknown addresses, indicating potential compromise.
 
 **Configurable Parameters**:
-- **Required**: Pattern definitions, time windows, frequency thresholds
+
+- **Required**: time windows, frequency
 - **Optional**: Threat intelligence feeds, address score data which related with sane activity onchain.
 
 ---
 
-## Step 2: Critical Invariants Configuration
+## Step 2: Detection Rules
 
-### Invariant 1: Role Separation Enforcement
+### **Critical Invariant Rules**
 
+#### **Rule 1: Role Separation Violation**
+
+**Rule Name**: USDC Role Address Overlap Detection  
+**Tags**: critical, invariant, role-separation, security  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
 **Detection Logic**: Invariant Violation Detection  
-**Scope**: Inventory  
-**Target**: USDC contract (0x43506849d7c04f9138d1a2050bbf3a0c054402dd), USDC proxy contract (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)
 
-**Violation Condition**: Same address holds multiple high-privilege roles
+**Parameters**:
+- **Event Names**: [OwnershipTransferred, AdminChanged, MasterMinterChanged, PauserChanged, BlacklisterChanged, RescuerChanged]
+- **Violation Condition**: Same address appears in multiple role events within 24 hours
+- **Monitored Variables**: newOwner, newAdmin, newMasterMinter, newPauser, newBlacklister, newRescuer
 
-**Required Parameters**:
-- **State Variables**: [owner, admin, masterMinter, minter, pauser, blacklister, rescuer]
-- **Violation Logic**: "ANY_ADDRESS_OVERLAP"
-- **Severity**: Critical
-
-**Purpose**: Prevents privilege concentration that could lead to single point of failure
+**Severity**: Critical
 
 ---
 
-### Invariant 2: Authorized Role Assignment
+#### **Rule 2: Proxy Implementation Unauthorized Change**
 
-**Detection Logic**: Invariant Violation Detection  
-**Scope**: Inventory  
-**Target**: USDC contract (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)
-
-**Violation Condition**: Role assignment from unauthorized caller
-
-**Required Parameters**:
-- **Functions**: [transferOwnership, updateMasterMinter, updatePauser, updateBlacklister, updateRescuer, changeAdmin]
-- **Expected Callers**: 
-  - transferOwnership: current owner
-  - updateMasterMinter: current owner
-  - updatePauser: current owner
-  - updateBlacklister: current owner
-  - updateRescuer: current owner
-  - changeAdmin: current admin
-- **Severity**: Critical
-- **Multisig Validation**: Require multisig/cosigner for role changes.
-- **Timelock Validation**: Enforce minimum delay for role changes.
-**Purpose**: Ensures only authorized roles can modify other roles
-
----
-
-### Invariant 3: Proxy Implementation Integrity
-
+**Rule Name**: USDC Proxy Implementation Upgrade Detection  
+**Tags**: critical, proxy, upgrade, implementation  
+**Scope**: Inventory asset events  
+**Target**: USDC Proxy (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)  
 **Detection Logic**: Proxy Upgrade Detection  
-**Scope**: Inventory  
-**Target**: USDC proxy contract (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)
 
-**Violation Condition**: Implementation change to unknown/malicious contract
+**Parameters**:
+- **Event Names**: [Upgraded]
+- **Storage Slot**: 0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3
+- **Current Implementation**: 0x43506849d7c04f9138d1a2050bbf3a0c054402dd
+- **Current Admin**: 0x807a96288a1a408dbc13de2b1d087d10356395d2
+- **Monitored Variables**: implementation (new implementation address)
 
-**Required Parameters**:
-- **Storage Slots**: 
-  - Implementation: 0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3  # keccak256("org.zeppelinos.proxy.implementation")
-  - Admin: 0x10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b  # keccak256("org.zeppelinos.proxy.admin")
-- **Severity**: Critical
-
-**Optional Parameters**:
-- **Implementation Whitelist**: Approved implementation addresses
-- **Code Verification**: Verify implementation source code
-- **Upgrade Timelock**: Enforce delay before implementation activation
-
-**Purpose**: Prevents malicious proxy implementation upgrades
+**Severity**: Critical
 
 ---
 
-### Invariant 4: Minting Authorization Boundaries
+#### **Rule 3: Minting Allowance Boundary Violation**
 
+**Rule Name**: USDC Mint Allowance Exceeded Detection  
+**Tags**: critical, minting, allowance, boundary  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
 **Detection Logic**: Invariant Violation Detection  
-**Scope**: Inventory  
-**Target**: USDC contract (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)
 
-**Violation Condition**: Minting exceeds authorized allowance
+**Parameters**:
+- **Event Names**: [Mint]
+- **Function Call**: mint(address _to, uint256 _amount)
+- **Violation Condition**: _amount > minterAllowed[msg.sender]
+- **Monitored Variables**: minter, to, amount
 
-**Required Parameters**:
-- **Function**: mint
+**Severity**: Critical
+
+---
+
+#### **Rule 4: Controller-Minter Relationship Integrity**
+
+**Rule Name**: USDC Controller-Minter Mapping Violation  
+**Tags**: critical, controller, minter, relationship  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Invariant Violation Detection  
+
+**Parameters**:
+- **Function Names**: [configureController]
+- **Violation Condition**: Controller assigned to multiple minters OR minter operations from unauthorized controllers
+- **Monitored Variables**: controller, minter
+
+**Severity**: Critical
+
+---
+
+#### **Rule 5: Total Supply Conservation**
+
+**Rule Name**: USDC Total Supply Unauthorized Change  
+**Tags**: critical, supply, conservation, unauthorized  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Invariant Violation Detection  
+
+**Parameters**:
+- **Event Names**: [Mint, Burn]
+- **State Variable**: totalSupply
+- **Violation Condition**: totalSupply changes without corresponding mint/burn events
+- **Monitored Variables**: totalSupply
+
+**Severity**: Critical
+
+---
+
+#### **Rule 6: Balance-Supply Consistency**
+
+**Rule Name**: USDC Balance-Supply Mismatch Detection  
+**Tags**: critical, balance, supply, consistency  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Invariant Violation Detection  
+
+**Parameters**:
+- **State Variables**: [balanceAndBlacklistStates, totalSupply]
+- **Violation Condition**: sum of all user balances ≠ totalSupply (accounting for blacklisted balances)
+- **Monitored Variables**: balances, totalSupply
+
+**Severity**: Critical
+
+---
+
+#### **Rule 7: MinterAllowance Decay Integrity**
+
+**Rule Name**: USDC Minter Allowance Unauthorized Increase  
+**Tags**: critical, allowance, unauthorized, increase  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Invariant Violation Detection  
+
+**Parameters**:
 - **State Variable**: minterAllowed
-- **Violation Logic**: "mint_amount > minterAllowed[caller]"
-- **Severity**: Critical
+- **Functions**: [configureMinter, incrementMinterAllowance, mint]
+- **Violation Condition**: minterAllowed[address] increases without authorized functions
+- **Monitored Variables**: minterAllowed
 
-**Optional Parameters**:
-- **Large Amount Threshold**: Additional alerts for large mints
-- **Minter Whitelist**: Approved minter addresses
-
-**Purpose**: Prevents unauthorized token creation beyond approved limits
+**Severity**: Critical
 
 ---
 
-## Step 3: Privileged Role Monitoring
+#### **Rule 8: Emergency State Consistency**
 
-### 3.1 Proxy Admin Role detection rule
+**Rule Name**: USDC Pause State Bypass Detection  
+**Tags**: critical, pause, bypass, emergency  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Invariant Violation Detection  
 
+**Parameters**:
+- **Event Names**: [Transfer, Mint, Burn]
+- **Function Names**: [transfer, transferFrom, mint, burn]
+- **Violation Condition**: Contract is paused = true
+- **State Variable**: paused
+
+**Severity**: Critical
+
+---
+
+### **Privileged Function Monitoring Rules**
+
+#### **Rule 9: Proxy Admin Role Operations**
+
+**Rule Name**: USDC Proxy Admin Function Calls  
+**Tags**: critical, admin, proxy, privileged  
+**Scope**: Inventory asset events  
+**Target**: USDC Proxy (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)  
 **Detection Logic**: Privileged Function Call Detection  
-**Scope**: Inventory  
-**Target**: USDC proxy contract (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)
 
-**Monitored Functions**:
-- `upgradeTo(address newImplementation)`
-- `upgradeToAndCall(address newImplementation, bytes data)`
-- `changeAdmin(address newAdmin)`
+**Parameters**:
+- **Event Names**: [AdminChanged, Upgraded]
+- **Function Names**: [changeAdmin, upgradeTo, upgradeToAndCall]
+- **Monitored Variables**: previousAdmin, newAdmin, implementation
 
-**Required Parameters**:
-- **Function Signatures**: [upgradeTo, upgradeToAndCall, changeAdmin]
-- **Severity**: Critical
-- **Alert Condition**: Any function call
-
-**Optional Parameters**:
-- **Implementation Validation**: Check if newImplementation is approved
-- **Admin Validation**: Verify newAdmin is expected address
-- **Caller Validation**: Ensure caller is current admin
-
-**Purpose**: Track all proxy-level administrative operations
+**Severity**: Critical
 
 ---
 
-### 3.2 Owner Role
+#### **Rule 10: Owner Role Operations**
 
+**Rule Name**: USDC Owner Privileged Function Calls  
+**Tags**: critical, owner, privileged, role-management  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
 **Detection Logic**: Privileged Function Call Detection  
-**Scope**: Inventory  
-**Target**: USDC contract (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)
 
-**Monitored Functions**:
+**Parameters**:
+- **Event Names**: [OwnershipTransferred, MasterMinterChanged, PauserChanged, BlacklisterChanged, RescuerChanged]
+- **Function Names**: [transferOwnership, updateMasterMinter, updatePauser, updateBlacklister, updateRescuer, configureController, removeController, setMinterManager, upgrade, withdrawFiatToken, abortUpgrade, tearDown]
+- **Monitored Variables**: previousOwner, newOwner, newMasterMinter, newPauser, newBlacklister, newRescuer
 
-- `transferOwnership(address newOwner)`
-- `updateMasterMinter(address _newMasterMinter)`
-- `updatePauser(address _newPauser)`
-- `updateBlacklister(address _newBlacklister)`
-- `updateRescuer(address newRescuer)`
-- `configureController(address _controller, address _worker)`
-- `removeController(address _controller)`
-- `setMinterManager(address _newMinterManager)`
-- `upgrade()` (from upgrader contracts)
-- `withdrawFiatToken()` (from upgrader contracts)
-- `abortUpgrade()` (from upgrader contracts)
-- `tearDown()` (from upgrader contracts)
-
-**Required Parameters**:
-
-- **Function Signatures**: [transferOwnership, updateMasterMinter, updatePauser, updateBlacklister, updateRescuer, configureController, removeController, setMinterManager, upgrade, withdrawFiatToken, abortUpgrade, tearDown]
-- **Severity**: Critical
-- **Alert Condition**: Any function call
-
-**Optional Parameters**:
-
-- **New Address Validation**: Check if new role addresses are known
-- **Multisig Requirement**: Validate calls come from multisig with consigner module
-
-**Purpose**: Monitor all owner-level configuration changes
+**Severity**: Critical
 
 ---
 
-### 3.3 Master Minter Role
+#### **Rule 11: Master Minter Operations**
 
+**Rule Name**: USDC Master Minter Function Calls  
+**Tags**: high, master-minter, minting, privileged  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
 **Detection Logic**: Privileged Function Call Detection  
-**Scope**: Inventory  
-**Target**: USDC contract (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)
 
-**Monitored Functions**:
+**Parameters**:
+- **Event Names**: [MinterConfigured, MinterRemoved]
+- **Function Names**: [configureMinter, removeMinter]
+- **Monitored Variables**: minter, minterAllowedAmount, oldMinter
 
-- `configureMinter(address minter, uint256 minterAllowedAmount)`
-- `removeMinter(address minter)`
-
-**Required Parameters**:
-
-- **Function Signatures**: [configureMinter, removeMinter]
-- **Severity**: High
-- **Alert Condition**: Any function call
-
-**Optional Parameters**:
-
-- **Minter Validation**: Check if minter address is approved
-
-**Purpose**: Monitor minter authorization and allowance management
+**Severity**: High
 
 ---
 
-### 3.4 Emergency Roles (Pauser, Blacklister)
+#### **Rule 12: Minter Role Operations**
 
+**Rule Name**: USDC Minter Function Calls  
+**Tags**: high, minter, privileged, token-operations  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
 **Detection Logic**: Privileged Function Call Detection  
-**Scope**: Inventory  
-**Target**: USDC contract (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)
 
-**Monitored Functions**:
+**Parameters**:
+- **Event Names**: [Mint, Burn]
+- **Function Names**: [mint, burn]
+- **Monitored Variables**: minter, to, amount
 
-- `pause()`
-- `unpause()`
-- `blacklist(address _account)`
-- `unBlacklist(address _account)`
-
-**Required Parameters**:
-
-- **Function Signatures**: [pause, unpause, blacklist, unBlacklist]
-- **Severity**: High
-- **Alert Condition**: Any function call
-
-**Optional Parameters**:
-
-- **Context Requirement**: Validate emergency use case
-- **Address Validation**: Check blacklisted addresses against threat intel
-
-**Purpose**: Monitor emergency functions and compliance operations
+**Severity**: High
 
 ---
 
-## Step 4: Abuse Prevention Patterns
+#### **Rule 13: Large Minting Operations**
 
-### 4.1 Rapid Privilege Escalation
+**Rule Name**: USDC Large Mint Detection  
+**Tags**: high, minting, large-amount, suspicious  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Privileged Function Call Detection  
 
+**Parameters**:
+- **Event Names**: [Mint]
+- **Function Names**: [mint]
+- **Threshold**: amount > X amount of USDC
+- **Monitored Variables**: minter, to, amount
+
+**Severity**: High
+
+---
+
+#### **Rule 14: Emergency Function Usage**
+
+**Rule Name**: USDC Emergency Function Detection  
+**Tags**: high, emergency, pause, blacklist  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Privileged Function Call Detection  
+
+**Parameters**:
+- **Event Names**: [Pause, Unpause, Blacklisted, UnBlacklisted]
+- **Function Names**: [pause, unpause, blacklist, unBlacklist]
+- **Monitored Variables**: _account (for blacklist operations)
+
+**Severity**: High
+
+---
+
+#### **Rule 15: Asset Recovery Operations**
+
+**Rule Name**: USDC Asset Rescue Detection  
+**Tags**: medium, rescue, asset-recovery, erc20  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Privileged Function Call Detection  
+
+**Parameters**:
+- **Event Names**: [Transfer] (when from=rescuer contract)
+- **Function Names**: [rescueERC20]
+- **Monitored Variables**: tokenContract, to, amount
+
+**Severity**: Medium
+
+---
+
+### **Abuse Pattern Detection Rules**
+
+#### **Rule 16: Rapid Privilege Escalation**
+
+**Rule Name**: USDC Rapid Role Change Pattern  
+**Tags**: critical, abuse, rapid-changes, privilege-escalation  
+**Scope**: Chain-wide events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
 **Detection Logic**: Abuse Pattern Detection  
-**Scope**: Chain-wide  
-**Target**: USDC contract + related addresses
 
-**Pattern Definition**: Multiple privilege-changing functions called within short timeframe
+**Parameters**:
+- **Event Names**: [OwnershipTransferred, AdminChanged, MasterMinterChanged, PauserChanged, BlacklisterChanged]
+- **Time Window**: XXXX seconds or XX slots
+- **Threshold**: >= X role change events
+- **Pattern**: Multiple privilege-changing events from same or related addresses
 
-**Required Parameters**:
+**Severity**: Critical
 
+---
+
+#### **Rule 17: Unknown Address Privilege Assignment**
+
+**Rule Name**: USDC Unknown Address Role Assignment  
+**Tags**: critical, unknown-address, privilege-assignment, suspicious  
+**Scope**: Chain-wide events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Abuse Pattern Detection  
+
+**Parameters**:
+- **Event Names**: [OwnershipTransferred, AdminChanged, MasterMinterChanged, PauserChanged, BlacklisterChanged, RescuerChanged]
+- **Address History Check**: newAddress has < 10 previous transactions
+- **Monitored Variables**: All new role addresses
+- **Threat Intel**: Cross-reference with known malicious addresses
+
+**Severity**: Critical
+
+---
+
+#### **Rule 18: Upgrade-to-Drain Attack Pattern**
+
+**Rule Name**: USDC Upgrade-to-Drain Detection  
+**Tags**: critical, upgrade-attack, drain, proxy  
+**Scope**: Chain-wide events  
+**Target**: USDC Proxy (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48)  
+**Detection Logic**: Abuse Pattern Detection  
+
+**Parameters**:
+- **Event Sequence**: [Upgraded] -> [Transfer] (large amounts)
+- **Time Window**: XXX seconds 
+
+**Severity**: Critical
+
+---
+
+#### **Rule 19: Blacklist Bypass Attempt**
+
+**Rule Name**: USDC Blacklist Bypass Detection  
+**Tags**: high, blacklist, bypass, compliance  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Invariant Violation Detection  
+
+**Parameters**:
+- **Event Names**: [Transfer, Mint]
+- **Function Names**: [transfer, transferFrom, mint]
+- **Violation Condition**: from/to address is blacklisted
+- **Monitored Variables**: from, to, amount
+
+**Severity**: High
+
+---
+
+#### **Rule 20: Suspicious Minter Activity**
+
+**Rule Name**: USDC Suspicious Minter Pattern  
+**Tags**: high, minter, suspicious, pattern  
+**Scope**: Inventory asset events  
+**Target**: USDC Implementation (0x43506849d7c04f9138d1a2050bbf3a0c054402dd)  
+**Detection Logic**: Abuse Pattern Detection  
+
+**Parameters**:
+- **Event Names**: [Mint]
+- **Pattern**: Minting to same address > X times in XXX seconds
+- **Threshold**: Same recipient address, frequency > X times
 - **Time Window**: XXXX seconds
-- **Function Count**: >= X privileged functions
-- **Severity**: Critical
+- **Monitored Variables**: minter, to, amount
 
-**Purpose**: Detect coordinated privilege escalation attacks
-
----
-
-### 4.2 Unknown Address Privilege Assignment
-
-**Detection Logic**: Abuse Pattern Detection  
-**Scope**: Inventory + Chain-wide  
-**Target**: USDC contract
-
-**Pattern Definition**: Privileged role assigned to address with no previous interaction history
-
-**Required Parameters**:
-
-- **Functions**: All role update functions
-- **Address History**: Check transaction history
-- **Severity**: Critical
-
-**Optional Parameters**:
-
-- **Multisig Validation**: Require multisig and cosigner module setup
-
-**Purpose**: Prevent privilege assignment to potentially compromised addresses
-
----
-
-### 4.3 Upgrade-to-Drain Pattern
-
-**Detection Logic**: Abuse Pattern Detection  
-**Scope**: Chain-wide  
-**Target**: USDC proxy contract
-
-**Pattern Definition**: Proxy upgrade followed by suspicious token operations
-
-**Required Parameters**:
-- **Sequence**: upgradeTo -> large token operations
-- **Time Window**: 24 hours
-- **Severity**: Critical
-
-**Optional Parameters**:
-- **Implementation Analysis**: Analyze new implementation code
-- **Token Flow Analysis**: Track large token movements
-
-**Purpose**: Detect potential upgrade-to-drain attack patterns
+**Severity**: High
 
 ---
 
 ## Next Steps
 
-1. **[Automated Workflows](./automated-workflows.md)** - Configure response actions
-2. **[Security Modules](./security-modules.md)** - Set up prevention mechanisms
-3. **[Inventory Configuration](./inventory-configuration.md)** - Asset setup and labeling 
+1. **[Automated Workflows](./automated-workflows.md)** - Configure response actions for these rules
+2. **[Security Modules](./security-modules.md)** - Set up prevention mechanisms  
+3. **[Inventory Configuration](./inventory-configuration.md)** - Asset setup and labeling
+
+---
