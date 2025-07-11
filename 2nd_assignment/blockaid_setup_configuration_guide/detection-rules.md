@@ -475,7 +475,7 @@ proxy contract upgrade, abusing role based functions.
 ## Next Steps
 
 1. **[Automated Workflows](./automated-workflows.md)** - Configure response actions for these rules
-2. **[Security Modules](./security-modules.md)** - Set up prevention mechanisms  
-3. **[Inventory Configuration](./inventory-configuration.md)** - Asset setup and labeling
+2. **[Inventory Configuration](./inventory-configuration.md)** - Asset setup and labeling
+3. **[Security Modules](./out-of-scope-but-for-proactive-prevention-)** - Set up proactive prevention mechanisms (Out of scope, but I think necessary)
 
 ---
