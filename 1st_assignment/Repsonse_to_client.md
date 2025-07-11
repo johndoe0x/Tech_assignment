@@ -1,3 +1,5 @@
+# Response to Client
+
 Dear Client,
 
 I’ve reviewed the issues you’re facing and would like to introduce two Blockaid solutions that can help resolve them:
