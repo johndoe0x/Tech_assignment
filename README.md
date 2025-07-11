@@ -26,17 +26,11 @@ Comprehensive blockchain security and smart contract analysis for USDC:
 
 #### 📋 Contract Documentation
 
-- **`contract_doc/`** - Detailed USDC smart contract documentation
+- **`usdc_contract_doc/`** - Detailed USDC smart contract documentation
 
 #### 💎 Smart Contracts
 
-- **`contracts/`** - Complete USDC smart contract codebase
-
-### 📚 Documentation Directories
-
-- `blockaid_doc/` - Additional Blockaid documentation
-- `blockaid_doc_md/` - Markdown documentation for Blockaid
-- `security_module_md/` - Security module documentation
+- **`usdc_contracts/`** - Complete USDC smart contract codebase
 
 ### 📄 Assignment Document
 
@@ -44,5 +38,5 @@ Comprehensive blockchain security and smart contract analysis for USDC:
 
 ## 🚀 Getting Started
 
-1. **First Assignment**: Check `1st_assignment/` for API demonstration materials
-2. **Second Assignment**: Start with `2nd_assignment/blockaid_setup_configuration_guide/README.md`
+1. **First Assignment**: Check `1st_assignment/` for API demonstration materials as wallet solution
+2. **Second Assignment**: Start with `2nd_assignment/blockaid_setup_configuration_guide/README.md` for USDC contract monitoring
