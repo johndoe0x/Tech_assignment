@@ -38,19 +38,3 @@ This monitoring configuration addresses Circle's three main security concerns:
 1. **Privileged Access Monitoring** - Comprehensive coverage of all 8 privileged roles
 2. **Proxy Implementation Upgrade Risks** - Critical detection and response for proxy changes
 3. **Role-based Function Abuse** - Advanced pattern detection and automated responses
-
-## 🔧 Quick Start
-
-1. **Setup**: Start with [Inventory Configuration](./inventory-configuration.md)
-2. **Detection**: Configure [Detection Rules](./detection-rules.md) (30 rules covering all threats)
-3. **Response**: Implement [Automated Workflows](./automated-workflows.md) (8 comprehensive workflows)
-4. **Security**: Deploy [Security Modules](./security-modules.md) for prevention
-
-
-## 📊 Coverage Summary
-
-- **Detection Rules**: 30 rules covering all privileged functions
-- **Workflows**: 8 comprehensive response workflows
-- **Privileged Roles**: 8 roles monitored (Admin, Owner, Master Minter, Minters, Pauser, Blacklister, Rescuer, Controllers)
-- **Security Modules**: Cosigner, Transaction Scanning, Token Scanning
-- **Threat Vectors**: Proxy upgrades, role abuse, minting anomalies, emergency function misuse
