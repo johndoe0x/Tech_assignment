@@ -18,11 +18,11 @@ Comprehensive blockchain security and smart contract analysis for USDC:
 #### 🔧 Configuration & Setup
 
 - **`blockaid_setup_configuration_guide/`** - Complete setup documentation
-  - `README.md` - Main setup guide
   - `contract_analysis.md` - Contract analysis procedures
   - `detection-rules.md` - Security detection rules
   - `inventory-configuration.md` - Inventory management setup
   - `workflows.md` - Workflow documentation
+  - `out-of-scope-but-for-proactive-prevention` - further discussion to proactive prevetion ( I know this is a bit out of scope but inspired by knowledge section tell about What Makes Blockaid Different.)
 
 #### 📋 Contract Documentation
 
