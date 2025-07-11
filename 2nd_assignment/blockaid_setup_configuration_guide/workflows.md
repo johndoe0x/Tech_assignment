@@ -26,7 +26,6 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 
 - **message**: Alert message template (e,g payger duty)
 
-
 #### 2. `send_email_notification`
 
 **Description**: Send email alerts to specified recipients  
@@ -67,7 +66,6 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 - **description**: Incident description (required)
 - **severity**: P0, P1, P2, P3 (required)
 - **assignee**: Default assignee (required)
-
 
 #### 6. `label_address`
 
@@ -141,7 +139,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 
 **Name**: USDC Critical Infrastructure Security Response  
 **Tags**: ["critical", "infrastructure", "proxy", "ownership"]  
-**Detection Rules**: 
+**Detection Rules**:
 
 - Rule 1: Role Separation Violation
 - Rule 2: Proxy Implementation Unauthorized Change
@@ -151,6 +149,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Severity**: Critical
 
 **Actions**:
+
 1. **Action Type**: `send_slack_notification`
    **Configuration**:
    - channel: "#usdc-security-critical"
@@ -187,6 +186,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Name**: USDC Minting Operations Security  
 **Tags**: ["minting", "allowance", "supply"]  
 **Detection Rules**:
+
 - Rule 3: Minting Allowance Boundary Violation
 - Rule 5: Total Supply Conservation
 - Rule 7: MinterAllowance Decay Integrity
@@ -197,6 +197,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Severity**: High
 
 **Actions**:
+
 1. **Action Type**: `send_slack_notification`
    **Configuration**:
    - channel: "#usdc-minting-security"
@@ -225,6 +226,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Name**: USDC Emergency Functions Monitoring  
 **Tags**: ["emergency", "pause", "blacklist"]  
 **Detection Rules**:
+
 - Rule 8: Emergency State Consistency
 - Rule 14: Emergency Function Usage
 - Rule 19: Blacklist Bypass Attempt
@@ -232,6 +234,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Severity**: High
 
 **Actions**:
+
 1. **Action Type**: `send_email_notification`
    **Configuration**:
    - recipients: ["compliance@circle.com", "legal@circle.com"]
@@ -259,11 +262,13 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Name**: USDC Controller-Minter Relationship Security  
 **Tags**: ["controller", "relationship", "integrity"]  
 **Detection Rules**:
+
 - Rule 4: Controller-Minter Relationship Integrity
 
 **Severity**: Critical
 
 **Actions**:
+
 1. **Action Type**: `send_slack_notification`
    **Configuration**:
    - channel: "#usdc-controller-security"
@@ -287,15 +292,17 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Name**: USDC Balance and Supply Integrity  
 **Tags**: ["balance", "supply", "consistency"]  
 **Detection Rules**:
+
 - Rule 6: Balance-Supply Consistency
 
 **Severity**: Critical
 
 **Actions**:
+
 1. **Action Type**: `send_slack_notification`
    **Configuration**:
    - channel: "#usdc-accounting-critical"
-   - message: "🚨 ACCOUNTING ANOMALY: {{rule_name}} - Balance/Supply mismatch detected"
+   - message: "ACCOUNTING ANOMALY: {{rule_name}} - Balance/Supply mismatch detected"
 
 2. **Action Type**: `send_email_notification`
    **Configuration**:
@@ -318,6 +325,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Name**: USDC Advanced Attack Pattern Detection  
 **Tags**: ["advanced", "attack", "pattern"]  
 **Detection Rules**:
+
 - Rule 16: Rapid Privilege Escalation
 - Rule 17: Unknown Address Privilege Assignment
 - Rule 18: Upgrade-to-Drain Attack Pattern
@@ -326,6 +334,7 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
 **Severity**: Critical
 
 **Actions**:
+
 1. **Action Type**: `send_sms_notification`
    **Configuration**:
    - phone_numbers: ["+1234567890", "+1234567891"]
@@ -355,7 +364,6 @@ In modern security operations, and especially in a web3 ecosystem, speed and pre
    - lookback_period: "{{current_block - 43200}}"
 
 ---
-
 
 ## Workflow Activation Matrix
 

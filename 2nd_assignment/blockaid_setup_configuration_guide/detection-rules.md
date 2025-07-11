@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document defines detection logic for USDC contract monitoring following Blockaid's platform setup process. Based on Circle's concerns from the challenge requirements:
+This document defines detection logic for USDC contract monitoring following Blockaid's platform setup process.
+Based on Circle's concerns from the challenge requirements:
 
 - **Privileged access** (who can do what)
 - **Proxy implementation upgrade risks**
@@ -196,6 +197,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Invariant Violation Detection  
 
 **Parameters**:
+
 - **State Variables**: [balanceAndBlacklistStates, totalSupply]
 - **Violation Condition**: sum of all user balances ≠ totalSupply (accounting for blacklisted balances)
 - **Monitored Variables**: balances, totalSupply
@@ -213,6 +215,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Invariant Violation Detection  
 
 **Parameters**:
+
 - **State Variable**: minterAllowed
 - **Functions**: [configureMinter, incrementMinterAllowance, mint]
 - **Violation Condition**: minterAllowed[address] increases without authorized functions
@@ -231,6 +234,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Invariant Violation Detection  
 
 **Parameters**:
+
 - **Event Names**: [Transfer, Mint, Burn]
 - **Function Names**: [transfer, transferFrom, mint, burn]
 - **Violation Condition**: Contract is paused = true
@@ -251,6 +255,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [AdminChanged, Upgraded]
 - **Function Names**: [changeAdmin, upgradeTo, upgradeToAndCall]
 - **Monitored Variables**: previousAdmin, newAdmin, implementation
@@ -268,6 +273,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [OwnershipTransferred, MasterMinterChanged, PauserChanged, BlacklisterChanged, RescuerChanged]
 - **Function Names**: [transferOwnership, updateMasterMinter, updatePauser, updateBlacklister, updateRescuer, configureController, removeController, setMinterManager, upgrade, withdrawFiatToken, abortUpgrade, tearDown]
 - **Monitored Variables**: previousOwner, newOwner, newMasterMinter, newPauser, newBlacklister, newRescuer
@@ -285,6 +291,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [MinterConfigured, MinterRemoved]
 - **Function Names**: [configureMinter, removeMinter]
 - **Monitored Variables**: minter, minterAllowedAmount, oldMinter
@@ -302,6 +309,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [Mint, Burn]
 - **Function Names**: [mint, burn]
 - **Monitored Variables**: minter, to, amount
@@ -319,6 +327,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [Mint]
 - **Function Names**: [mint]
 - **Threshold**: amount > X amount of USDC
@@ -337,6 +346,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [Pause, Unpause, Blacklisted, UnBlacklisted]
 - **Function Names**: [pause, unpause, blacklist, unBlacklist]
 - **Monitored Variables**: _account (for blacklist operations)
@@ -354,6 +364,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Privileged Function Call Detection  
 
 **Parameters**:
+
 - **Event Names**: [Transfer] (when from=rescuer contract)
 - **Function Names**: [rescueERC20]
 - **Monitored Variables**: tokenContract, to, amount
@@ -373,6 +384,7 @@ This document defines detection logic for USDC contract monitoring following Blo
 **Detection Logic**: Abuse Pattern Detection  
 
 **Parameters**:
+
 - **Event Names**: [OwnershipTransferred, AdminChanged, MasterMinterChanged, PauserChanged, BlacklisterChanged]
 - **Time Window**: XXXX seconds or XX slots
 - **Threshold**: >= X role change events

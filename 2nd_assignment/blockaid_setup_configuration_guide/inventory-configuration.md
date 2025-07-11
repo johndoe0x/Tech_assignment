@@ -26,7 +26,7 @@ Asset Dialog_2:
 
 ### 2.1 Required ABIs
 
-ABIs are required in order to onboard contracts. 
+ABIs are required in order to onboard contracts.
 
 The initial scan will:
 

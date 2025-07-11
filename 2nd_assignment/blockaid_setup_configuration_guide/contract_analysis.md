@@ -341,7 +341,7 @@ separation of concerns across 8 distinct privileged roles. The architecture
 includes a sophisticated delegation system through the MasterMinter/Controller
 pattern that enables operational flexibility while maintaining security controls.
 However, the concentration of power in privileged roles and the upgrade mechanism
-present significant security considerations that require continuous monitoring 
+present significant security considerations that require continuous monitoring
 and strong operational security practices.
 
 Key monitoring focus areas:
