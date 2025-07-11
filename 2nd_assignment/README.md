@@ -34,7 +34,7 @@ Our analysis of the USDC smart contract reveals a sophisticated multi-role archi
 | **Blacklister** | `blacklist()`, `unBlacklist()` | **HIGH** |
 | **Rescuer** | `rescueERC20()` | **MEDIUM** |
 
-*Full analysis: [Contract Analysis](./contract_analysis.md)*
+*Full analysis: [Contract Analysis](./blockaid_setup_configuration_guide/contract_analysis.md)*
 
 ## Security Monitoring Architecture
 
@@ -69,7 +69,7 @@ graph TD
 
 ### **Step 1: Contract Analysis Foundation**
 
-**Document**: [Contract Analysis](./contract_analysis.md)
+**Document**: [Contract Analysis](./blockaid_setup_configuration_guide/contract_analysis.md)
 
 **Purpose**: Comprehensive security analysis of USDC smart contract architecture
 
@@ -92,7 +92,7 @@ graph TD
 
 ### **Step 2: Monitoring Infrastructure Setup**
 
-**Document**: [Inventory Configuration](./inventory-configuration.md)
+**Document**: [Inventory Configuration](./blockaid_setup_configuration_guide/inventory-configuration.md)
 
 **Purpose**: Establish monitoring infrastructure for USDC contract ecosystem
 
@@ -113,7 +113,7 @@ graph TD
 
 ### **Step 3: Detection Rules Deployment**
 
-**Document**: [Detection Rules](./detection-rules.md)
+**Document**: [Detection Rules](./blockaid_setup_configuration_guide/detection-rules.md)
 
 **Purpose**: Implement comprehensive monitoring for all identified security risks
 
@@ -155,7 +155,7 @@ graph TD
 
 ### **Step 4: Automated Alert & Response Workflows**
 
-**Document**: [Workflows](./workflows.md)
+**Document**: [Workflows](./blockaid_setup_configuration_guide/workflows.md)
 
 **Purpose**: Implement automated alerting and response mechanisms to ensure the client is notified of suspicious activity
 
@@ -206,9 +206,9 @@ graph TD
 
 ## Next Steps
 
-1. **[Begin with Contract Analysis](./contract_analysis.md)** - Understand the complete security landscape
-2. **[Set up Inventory Configuration](./inventory-configuration.md)** - Establish monitoring infrastructure  
-3. **[Deploy Detection Rules](./detection-rules.md)** - Implement comprehensive monitoring
-4. **[Configure Automated Workflows](./workflows.md)** - Set up alerting and response mechanisms
+1. **[Begin with Contract Analysis](./blockaid_setup_configuration_guide/contract_analysis.md)** - Understand the complete security landscape
+2. **[Set up Inventory Configuration](./blockaid_setup_configuration_guide/inventory-configuration.md)** - Establish monitoring infrastructure  
+3. **[Deploy Detection Rules](./blockaid_setup_configuration_guide/detection-rules.md)** - Implement comprehensive monitoring
+4. **[Configure Automated Workflows](./blockaid_setup_configuration_guide/workflows.md)** - Set up alerting and response mechanisms
 
----
+--- 
