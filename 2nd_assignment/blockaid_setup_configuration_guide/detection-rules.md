@@ -20,7 +20,10 @@ Based on Circle's concerns from the challenge requirements:
 - Supported Chains: Ethereum Mainnet
 - Target Asset: USDC contract in inventory
 
-**Usage Guidelines**: Monitor critical contract invariants that should never be violated under normal operations. Essential for detecting proper Privileged access, privilege escalation, proxy contract upgrade, abusing role based functions. 
+**Usage Guidelines**: Monitor critical contract invariants that
+should never be violated under normal operations.
+Essential for detecting proper Privileged access, privilege escalation,
+proxy contract upgrade, abusing role based functions.
 
 **Example**: Detecting when multiple high-privilege roles are assigned to the same address, violating role separation principles.
 
@@ -143,8 +146,8 @@ Based on Circle's concerns from the challenge requirements:
 **Parameters**:
 
 - **Event Names**: [Mint]
-- **Function Call**: mint(address _to, uint256 _amount)
-- **Violation Condition**: _amount > minterAllowed[msg.sender]
+- **Function Call**: `mint(address _to, uint256 _amount)`
+- **Violation Condition**: `_amount > minterAllowed[msg.sender]`
 - **Monitored Variables**: minter, to, amount
 
 **Severity**: Critical
@@ -349,7 +352,7 @@ Based on Circle's concerns from the challenge requirements:
 
 - **Event Names**: [Pause, Unpause, Blacklisted, UnBlacklisted]
 - **Function Names**: [pause, unpause, blacklist, unBlacklist]
-- **Monitored Variables**: _account (for blacklist operations)
+- **Monitored Variables**: `_account` (for blacklist operations)
 
 **Severity**: High
 
